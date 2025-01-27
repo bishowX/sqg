@@ -1,7 +1,7 @@
 "use server";
 
 import { databaseService } from "./services/database.service";
-import { aiService } from "./services/ai.service";
+import { aiService, type ChartConfig } from "./services/ai.service";
 
 export type ActionResult<T> = {
   success: boolean;
@@ -10,6 +10,12 @@ export type ActionResult<T> = {
     message: string;
     code: string;
   };
+};
+
+export type QueryResult = {
+  query: string;
+  data: any[];
+  chart?: ChartConfig;
 };
 
 export const generateQuery = async (
@@ -34,13 +40,30 @@ export const generateQuery = async (
 };
 
 export const runGeneratedSQLQuery = async (
-  query: string
-): Promise<ActionResult<any[]>> => {
+  query: string,
+  question: string
+): Promise<ActionResult<QueryResult>> => {
   try {
     const data = await databaseService.executeQuery(query);
+
+    // Generate chart configuration if there's data
+    let chart: ChartConfig | undefined;
+    if (data.length > 0) {
+      try {
+        chart = await aiService.generateChartConfig(data, question);
+      } catch (error) {
+        console.error("Error generating chart config:", error);
+        // Don't fail the whole request if chart generation fails
+      }
+    }
+
     return {
       success: true,
-      data,
+      data: {
+        query,
+        data,
+        chart,
+      },
     };
   } catch (error: any) {
     console.error("Error executing query:", error);

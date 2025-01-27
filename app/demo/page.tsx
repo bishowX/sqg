@@ -2,12 +2,19 @@
 
 import { useState } from "react";
 import { QueryInput } from "@/app/components/query-input";
-import { generateQuery, runGeneratedSQLQuery } from "../actions";
+import {
+  generateQuery,
+  runGeneratedSQLQuery,
+  type QueryResult,
+} from "../actions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DataChart } from "@/app/components/data-chart";
+import type { ChartConfig } from "../services/ai.service";
 
 type QueryState = {
   query: string | null;
   results: any[] | null;
+  chart: ChartConfig | null;
   error: string | null;
   isLoading: boolean;
 };
@@ -16,6 +23,7 @@ export default function Demo() {
   const [queryState, setQueryState] = useState<QueryState>({
     query: null,
     results: null,
+    chart: null,
     error: null,
     isLoading: false,
   });
@@ -35,17 +43,19 @@ export default function Demo() {
       const query = queryResult.data;
       setQueryState((prev) => ({ ...prev, query }));
 
-      const executionResult = await runGeneratedSQLQuery(query);
+      const executionResult = await runGeneratedSQLQuery(query, input);
 
-      if (!executionResult.success) {
+      if (!executionResult.success || !executionResult.data) {
         throw new Error(
           executionResult.error?.message || "Failed to execute query"
         );
       }
 
+      const result: QueryResult = executionResult.data;
       setQueryState((prev) => ({
         ...prev,
-        results: executionResult.data || [],
+        results: result.data,
+        chart: result.chart || null,
         isLoading: false,
       }));
     } catch (error: any) {
@@ -79,6 +89,13 @@ export default function Demo() {
           <pre className="p-2 overflow-x-auto bg-gray-100 rounded">
             {queryState.query}
           </pre>
+        </div>
+      )}
+
+      {queryState.chart && (
+        <div className="p-4 space-y-2 border rounded-lg">
+          <h2 className="font-semibold">Data Visualization:</h2>
+          <DataChart config={queryState.chart} />
         </div>
       )}
 
