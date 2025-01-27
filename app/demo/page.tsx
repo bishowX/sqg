@@ -1,12 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useChat } from "ai/react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { generateQuery, runGeneratedSQLQuery } from "./actions";
 import { QueryInput } from "@/app/components/query-input";
+import { generateQuery, runGeneratedSQLQuery } from "../actions";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type QueryState = {
   query: string | null;
@@ -15,7 +12,7 @@ type QueryState = {
   isLoading: boolean;
 };
 
-export default function Chat() {
+export default function Demo() {
   const [queryState, setQueryState] = useState<QueryState>({
     query: null,
     results: null,
@@ -62,7 +59,7 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col w-full max-w-4xl py-8 mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-center">SQL Query Generator</h1>
+      <h1 className="text-2xl font-bold text-center">SQL Query Demo</h1>
 
       <QueryInput
         onSubmit={handleQueryGeneration}
